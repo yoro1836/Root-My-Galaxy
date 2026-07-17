@@ -534,19 +534,19 @@ private fun SideChoiceMenu(
                     .padding(top = constrainedTop, end = 18.dp),
                 enter = scaleIn(
                     animationSpec = keyframes {
-                        durationMillis = 260
-                        1.08f at 130
-                        0.97f at 210
+                        durationMillis = 200
+                        1.025f at 95
+                        0.995f at 155
                     },
-                    initialScale = 0.72f,
+                    initialScale = 0.94f,
                     transformOrigin = TransformOrigin(1f, 0f),
                 ),
                 exit = scaleOut(
                     animationSpec = keyframes {
                         durationMillis = MENU_EXIT_MILLIS.toInt()
-                        1.05f at 65
+                        1.015f at 45
                     },
-                    targetScale = 0.8f,
+                    targetScale = 0.94f,
                     transformOrigin = TransformOrigin(1f, 0f),
                 ),
             ) {
@@ -619,7 +619,7 @@ private fun SideChoiceMenu(
     }
 }
 
-private const val MENU_EXIT_MILLIS = 190L
+private const val MENU_EXIT_MILLIS = 140L
 
 @Composable
 private fun languageLabel(tag: String): String = when {
