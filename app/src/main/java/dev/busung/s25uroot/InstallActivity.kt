@@ -185,7 +185,7 @@ private fun InstallerStatusCard(installState: InstallUiState) {
         modifier = Modifier
             .fillMaxWidth()
             .animateContentSize(),
-        shape = MaterialTheme.shapes.extraLarge,
+        shape = MaterialTheme.shapes.large,
         colors = CardDefaults.elevatedCardColors(
             containerColor = when (installState.phase) {
                 InstallPhase.Failed -> MaterialTheme.colorScheme.errorContainer
@@ -240,7 +240,7 @@ private fun InstallerStatusCard(installState: InstallUiState) {
 private fun InstallerSteps(phase: InstallPhase) {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.extraLarge,
+        shape = MaterialTheme.shapes.large,
         colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
         ),
@@ -305,7 +305,7 @@ private fun InstallerLog(
 ) {
     ElevatedCard(
         modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.extraLarge,
+        shape = MaterialTheme.shapes.large,
     ) {
         Column(
             modifier = Modifier

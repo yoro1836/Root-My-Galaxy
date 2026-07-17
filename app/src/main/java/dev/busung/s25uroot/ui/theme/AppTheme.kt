@@ -1,15 +1,11 @@
 package dev.busung.s25uroot.ui.theme
 
 import android.app.Activity
+import android.content.Context
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.Typography
-import androidx.compose.material3.ColorScheme
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
@@ -18,51 +14,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
+import com.materialkolor.PaletteStyle
+import com.materialkolor.dynamiccolor.ColorSpec
+import com.materialkolor.rememberDynamicColorScheme
 import dev.busung.s25uroot.AccentColor
-
-private data class AccentPalette(
-    val lightPrimary: Color,
-    val lightContainer: Color,
-    val darkPrimary: Color,
-    val darkContainer: Color,
-)
-
-private val palettes = mapOf(
-    AccentColor.Blue to AccentPalette(
-        Color(0xFF415F91), Color(0xFFD6E3FF), Color(0xFFAAC7FF), Color(0xFF284777),
-    ),
-    AccentColor.Violet to AccentPalette(
-        Color(0xFF6750A4), Color(0xFFEADDFF), Color(0xFFD0BCFF), Color(0xFF4F378B),
-    ),
-    AccentColor.Green to AccentPalette(
-        Color(0xFF356A35), Color(0xFFB7F0B1), Color(0xFF9CD49A), Color(0xFF1E511F),
-    ),
-    AccentColor.Orange to AccentPalette(
-        Color(0xFF8B4F23), Color(0xFFFFDBC6), Color(0xFFFFB783), Color(0xFF6D390E),
-    ),
-)
-
-private val stableDarkScheme = darkColorScheme()
-
-private fun ColorScheme.withStableDarkSurfaces(): ColorScheme = copy(
-    background = stableDarkScheme.background,
-    onBackground = stableDarkScheme.onBackground,
-    surface = stableDarkScheme.surface,
-    onSurface = stableDarkScheme.onSurface,
-    surfaceVariant = stableDarkScheme.surfaceVariant,
-    onSurfaceVariant = stableDarkScheme.onSurfaceVariant,
-    surfaceDim = stableDarkScheme.surfaceDim,
-    surfaceBright = stableDarkScheme.surfaceBright,
-    surfaceContainerLowest = stableDarkScheme.surfaceContainerLowest,
-    surfaceContainerLow = stableDarkScheme.surfaceContainerLow,
-    surfaceContainer = stableDarkScheme.surfaceContainer,
-    surfaceContainerHigh = stableDarkScheme.surfaceContainerHigh,
-    surfaceContainerHighest = stableDarkScheme.surfaceContainerHighest,
-    outline = stableDarkScheme.outline,
-    outlineVariant = stableDarkScheme.outlineVariant,
-    inverseSurface = stableDarkScheme.inverseSurface,
-    inverseOnSurface = stableDarkScheme.inverseOnSurface,
-)
 
 private val AppTypography = Typography(
     displaySmall = TextStyle(fontSize = 38.sp, lineHeight = 44.sp, fontWeight = FontWeight.Light),
@@ -78,6 +33,14 @@ private val AppTypography = Typography(
     labelMedium = TextStyle(fontSize = 12.sp, lineHeight = 17.sp, fontWeight = FontWeight.Medium),
 )
 
+private fun accentSeed(context: Context, accentColor: AccentColor): Color = when (accentColor) {
+    AccentColor.Dynamic -> Color(context.getColor(android.R.color.system_accent1_500))
+    AccentColor.Blue -> Color(0xFF415F91)
+    AccentColor.Violet -> Color(0xFF6750A4)
+    AccentColor.Green -> Color(0xFF356A35)
+    AccentColor.Orange -> Color(0xFF8B4F23)
+}
+
 @Composable
 fun RootMyGalaxyTheme(
     accentColor: AccentColor,
@@ -85,23 +48,12 @@ fun RootMyGalaxyTheme(
 ) {
     val context = LocalContext.current
     val darkTheme = isSystemInDarkTheme()
-    val palette = palettes[accentColor]
-    val colors = when {
-        accentColor == AccentColor.Dynamic && darkTheme ->
-            dynamicDarkColorScheme(context).withStableDarkSurfaces()
-        accentColor == AccentColor.Dynamic ->
-            dynamicLightColorScheme(context)
-        palette != null && darkTheme -> darkColorScheme(
-            primary = palette.darkPrimary,
-            primaryContainer = palette.darkContainer,
-        )
-        palette != null -> lightColorScheme(
-            primary = palette.lightPrimary,
-            primaryContainer = palette.lightContainer,
-        )
-        darkTheme -> darkColorScheme()
-        else -> lightColorScheme()
-    }
+    val colors = rememberDynamicColorScheme(
+        seedColor = accentSeed(context, accentColor),
+        isDark = darkTheme,
+        style = PaletteStyle.TonalSpot,
+        specVersion = ColorSpec.SpecVersion.SPEC_2025,
+    )
 
     SideEffect {
         val window = (context as Activity).window

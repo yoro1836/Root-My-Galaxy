@@ -33,6 +33,7 @@ and immutable Git commit are the trust and consistency boundaries.
 ## Interface
 
 - Material 3 Expressive UI
+- Tonal Spot palettes generated with the Material Color Utilities 2025 spec
 - overview and settings navigation
 - system dynamic, blue, violet, green, and orange Material palettes
 - Korean, English, Japanese, and Simplified Chinese app languages

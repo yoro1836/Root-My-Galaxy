@@ -38,10 +38,6 @@ data class InstallUiState(
             InstallPhase.LoadingKernelSu,
         )
 
-    val directExecutionReady: Boolean
-        get() = probeOutput.contains("ashmem_libcutils=ok") &&
-            probeOutput.contains("boot_id=ok") &&
-            probeOutput.contains("proc_self_mem=ok")
 }
 
 private data class CommandResult(val code: Int, val output: String)

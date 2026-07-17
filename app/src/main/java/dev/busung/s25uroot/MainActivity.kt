@@ -11,12 +11,16 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -31,6 +35,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.CheckCircle
@@ -38,6 +43,7 @@ import androidx.compose.material.icons.rounded.Code
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Language
+import androidx.compose.material.icons.rounded.Link
 import androidx.compose.material.icons.rounded.Memory
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Security
@@ -70,6 +76,7 @@ import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
@@ -220,18 +227,20 @@ private fun OverviewPage(
         }
         item { InstallStatusCard(installState, onInstall) }
         item { DeviceCard(device) }
-        item { CapabilityCard(installState) }
+        item { GitHubCard() }
     }
 }
 
 @Composable
 private fun InstallStatusCard(installState: InstallUiState, onInstall: () -> Unit) {
+    val interactionSource = remember { MutableInteractionSource() }
     ElevatedCard(
         onClick = {
             if (!installState.busy && installState.phase != InstallPhase.Installed) onInstall()
         },
         modifier = Modifier.fillMaxWidth().animateContentSize(),
-        shape = MaterialTheme.shapes.extraLarge,
+        shape = expressiveClickableCardShape(interactionSource),
+        interactionSource = interactionSource,
         colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
         ),
@@ -281,7 +290,7 @@ private fun InstallStatusCard(installState: InstallUiState, onInstall: () -> Uni
 private fun DeviceCard(device: DeviceSnapshot) {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.extraLarge,
+        shape = MaterialTheme.shapes.large,
         colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
         ),
@@ -310,26 +319,36 @@ private fun InfoRow(icon: ImageVector, label: String, value: String) {
 }
 
 @Composable
-private fun CapabilityCard(installState: InstallUiState) {
-    ElevatedCard(modifier = Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.extraLarge) {
+private fun GitHubCard() {
+    val interactionSource = remember { MutableInteractionSource() }
+    val uriHandler = LocalUriHandler.current
+    ElevatedCard(
+        onClick = { uriHandler.openUri(ROOT_MY_GALAXY_URL) },
+        modifier = Modifier.fillMaxWidth(),
+        shape = expressiveClickableCardShape(interactionSource),
+        interactionSource = interactionSource,
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+        ),
+    ) {
         Row(
             modifier = Modifier.padding(22.dp),
             horizontalArrangement = Arrangement.spacedBy(15.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(Icons.Rounded.Security, contentDescription = null)
-            Column {
-                Text(stringResource(R.string.direct_execution), style = MaterialTheme.typography.titleSmall)
+            Icon(Icons.Rounded.Code, contentDescription = null)
+            Column(modifier = Modifier.weight(1f)) {
+                Text(stringResource(R.string.github), style = MaterialTheme.typography.titleSmall)
                 Text(
-                    when {
-                        installState.phase == InstallPhase.Checking -> stringResource(R.string.capability_checking)
-                        installState.directExecutionReady -> stringResource(R.string.capability_available)
-                        else -> stringResource(R.string.capability_unavailable)
-                    },
+                    stringResource(R.string.open_github),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+            Icon(
+                Icons.Rounded.Link,
+                contentDescription = stringResource(R.string.open_github),
+            )
         }
     }
 }
@@ -441,10 +460,12 @@ private fun SettingsCard(
     value: String,
     onClick: () -> Unit,
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
     ElevatedCard(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.extraLarge,
+        shape = expressiveClickableCardShape(interactionSource),
+        interactionSource = interactionSource,
         colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
         ),
@@ -473,6 +494,22 @@ private fun SettingsCard(
             )
         }
     }
+}
+
+@Composable
+private fun expressiveClickableCardShape(
+    interactionSource: MutableInteractionSource,
+): RoundedCornerShape {
+    val pressed by interactionSource.collectIsPressedAsState()
+    val cornerRadius by animateDpAsState(
+        targetValue = if (pressed) 28.dp else 16.dp,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = Spring.StiffnessMedium,
+        ),
+        label = "clickable-card-corner",
+    )
+    return RoundedCornerShape(cornerRadius)
 }
 
 @Composable
@@ -621,6 +658,7 @@ private fun SideChoiceMenu(
 
 private const val MENU_EXIT_ANIMATION_MILLIS = 180
 private const val MENU_EXIT_WAIT_MILLIS = 200L
+private const val ROOT_MY_GALAXY_URL = "https://github.com/BuSung-dev/Root-My-Galaxy"
 
 @Composable
 private fun languageLabel(tag: String): String = when {
