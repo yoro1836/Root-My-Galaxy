@@ -10,7 +10,9 @@ import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.clickable
@@ -494,7 +496,7 @@ private fun SideChoiceMenu(
         closing = true
         visible = false
         coroutineScope.launch {
-            delay(MENU_EXIT_MILLIS)
+            delay(MENU_EXIT_WAIT_MILLIS)
             afterAnimation()
         }
     }
@@ -542,12 +544,14 @@ private fun SideChoiceMenu(
                     transformOrigin = TransformOrigin(1f, 0f),
                 ),
                 exit = scaleOut(
-                    animationSpec = keyframes {
-                        durationMillis = MENU_EXIT_MILLIS.toInt()
-                        1.015f at 45
-                    },
-                    targetScale = 0.94f,
-                    transformOrigin = TransformOrigin(1f, 0f),
+                    animationSpec = tween(durationMillis = MENU_EXIT_ANIMATION_MILLIS),
+                    targetScale = 0.86f,
+                    transformOrigin = TransformOrigin(1f, 0.5f),
+                ) + fadeOut(
+                    animationSpec = tween(
+                        durationMillis = 160,
+                        delayMillis = 20,
+                    ),
                 ),
             ) {
                 Surface(
@@ -619,7 +623,8 @@ private fun SideChoiceMenu(
     }
 }
 
-private const val MENU_EXIT_MILLIS = 140L
+private const val MENU_EXIT_ANIMATION_MILLIS = 180
+private const val MENU_EXIT_WAIT_MILLIS = 200L
 
 @Composable
 private fun languageLabel(tag: String): String = when {
